@@ -1,28 +1,28 @@
-from django.db import models
-
-class Genero(models.Model):
-    nombre = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.nombre
+from sqlalchemy import Column, Integer, String, ForeignKey, Table
+from sqlalchemy.orm import relationship
+from app.database import Base
 
 
-class Libro(models.Model):
-    titulo = models.CharField(max_length=200)
-    autor = models.CharField(max_length=100)
-    anio = models.PositiveIntegerField()
-    generos = models.ManyToManyField(Genero, through='LibroGenero', related_name='libros')
+# Tabla de asociación para relación muchos-a-muchos (Libro-Género)
+libro_genero = Table(
+    "libro_genero",
+    Base.metadata,
+    Column("libro_id", Integer, ForeignKey("libros.id")),
+    Column("genero_id", Integer, ForeignKey("generos.id")),
+)
 
-    def __str__(self):
-        return self.titulo
+class Libro(Base):
+    __tablename__ = "libros"
 
+    id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String(100), index=True)
+    autor = Column(String(100))
+    anio = Column(Integer)
+    generos = relationship("Genero", secondary=libro_genero, back_populates="libros")
 
-class LibroGenero(models.Model):
-    libro = models.ForeignKey(Libro, on_delete=models.CASCADE)
-    genero = models.ForeignKey(Genero, on_delete=models.CASCADE)
+class Genero(Base):
+    __tablename__ = "generos"
 
-    class Meta:
-        unique_together = ('libro', 'genero')
-
-    def __str__(self):
-        return f"{self.libro.titulo} - {self.genero.nombre}"
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(100), unique=True, index=True)
+    libros = relationship("Libro", secondary=libro_genero, back_populates="generos")

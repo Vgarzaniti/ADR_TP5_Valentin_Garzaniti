@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-multipart
+mysqlclient
+pymysql
+cryptography
+pymysql==1.0.2
